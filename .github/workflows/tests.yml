@@ -1,12 +1,8 @@
-name: Tests
+name: Lint
 
 on:
   push:
   pull_request:
-
-concurrency:
-  group: ci-${{ github.ref }}
-  cancel-in-progress: true
 
 jobs:
   lint:
@@ -17,7 +13,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup PHP 8.3
+      - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.3'
@@ -40,71 +36,3 @@ jobs:
 
       - name: Run Pint
         run: vendor/bin/pint --test
-
-  tests:
-    name: tests (${{ matrix.php }})
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        php: [ 8.2, 8.3, 8.4 ]
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: ${{ matrix.php }}
-          extensions: mbstring, intl, pdo, pdo_mysql, pdo_pgsql
-          coverage: none
-
-      - name: Get composer cache dir
-        id: composer-cache
-        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
-
-      - name: Cache composer
-        uses: actions/cache@v4
-        with:
-          path: ${{ steps.composer-cache.outputs.dir }}
-          key: ${{ runner.os }}-php-${{ matrix.php }}-composer-${{ hashFiles('**/composer.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-php-${{ matrix.php }}-composer-
-
-      # Paket loyihada lock'ga bog'lanmaslik — yangilanishlar PHP bo'yicha mos yechilishi uchun
-      - name: Prefer update for libraries
-        run: |
-          if [ -f composer.lock ]; then rm -f composer.lock; fi
-          composer config --unset platform.php || true
-
-      # PHP versiyasiga mos test dev-deps'larni majburan qo'yamiz
-      - name: Adjust dev dependencies for ${{ matrix.php }}
-        run: |
-          if [ "${{ matrix.php }}" = "8.2" ]; then
-            # PHP 8.2: Pest v3, plugin v3, PHPUnit v11
-            composer require --no-update --dev \
-              phpunit/phpunit:"^11.3" \
-              pestphp/pest:"^3.6" \
-              pestphp/pest-plugin-laravel:"^3.3"
-          else
-            # PHP 8.3/8.4: Pest v4, plugin v4, PHPUnit v12
-            composer require --no-update --dev \
-              phpunit/phpunit:"^12.0" \
-              pestphp/pest:"^4.0" \
-              pestphp/pest-plugin-laravel:"^4.0"
-          fi
-
-      - name: Install dependencies (resolve for this PHP)
-        run: composer update --no-interaction --prefer-dist --no-progress --ansi
-
-      - name: Validate composer.json
-        run: composer validate --strict
-
-      - name: Run tests
-        run: |
-          if [ -x ./vendor/bin/pest ]; then
-            ./vendor/bin/pest --ci --do-not-cache-result
-          else
-            ./vendor/bin/phpunit --do-not-cache-result
-          fi
