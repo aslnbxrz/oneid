@@ -1,0 +1,96 @@
+{
+  "name": "aslnbxrz/oneid",
+  "description": "Professional OneID integration package for Laravel - Uzbekistan's unified identification system",
+  "type": "library",
+  "license": "MIT",
+  "version": "1.0.0",
+  "keywords": [
+    "laravel",
+    "oneid",
+    "uzbekistan",
+    "authentication",
+    "oauth",
+    "sso",
+    "egov",
+    "identity"
+  ],
+  "homepage": "https://github.com/aslnbxrz/oneid",
+  "support": {
+    "issues": "https://github.com/aslnbxrz/oneid/issues",
+    "source": "https://github.com/aslnbxrz/oneid"
+  },
+  "autoload": {
+    "psr-4": {
+      "Aslnbxrz\\OneId\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Aslnbxrz\\OneId\\Tests\\": "tests/"
+    }
+  },
+  "authors": [
+    {
+      "name": "Bexruz Aslonov",
+      "email": "bexruz.aslonov1@gmail.com",
+      "homepage": "https://github.com/aslnbxrz",
+      "role": "Developer"
+    }
+  ],
+  "extra": {
+    "laravel": {
+      "providers": [
+        "Aslnbxrz\\OneId\\OneIdServiceProvider"
+      ],
+      "aliases": {
+        "OneID": "Aslnbxrz\\OneId\\Facades\\OneID"
+      }
+    }
+  },
+  "minimum-stability": "stable",
+  "prefer-stable": true,
+  "require": {
+    "php": "^8.2|^8.3|^8.4",
+    "illuminate/support": "^10.0|^11.0|^12.0",
+    "illuminate/http": "^10.0|^11.0|^12.0",
+    "illuminate/validation": "^10.0|^11.0|^12.0",
+    "spatie/laravel-package-tools": "^1.92",
+    "saloonphp/saloon": "^3.0|^3.14",
+    "spatie/laravel-data": "^4.17"
+  },
+  "require-dev": {
+    "orchestra/testbench": "^10.6|^11.0|^12.0",
+    "phpunit/phpunit": "^11.5.3|^12.0",
+    "pestphp/pest": "^4.0",
+    "pestphp/pest-plugin-laravel": "^4.0",
+    "nunomaduro/collision": "^8.0",
+    "mockery/mockery": "^1.6",
+    "laravel/pint": "^1.16"
+  },
+  "config": {
+    "allow-plugins": {
+      "pestphp/pest-plugin": true
+    },
+    "sort-packages": true
+  },
+  "scripts": {
+    "test": "pest",
+    "test:coverage": "pest --coverage",
+    "test:unit": "pest --testsuite=Unit",
+    "test:feature": "pest --testsuite=Feature",
+    "test:all": "pest --testsuite=Unit,Feature",
+    "lint": "pint",
+    "lint:test": "pint --test",
+    "format": "pint",
+    "analyse": "phpstan analyse",
+    "post-install-cmd": [
+      "@php -r \"if (file_exists('vendor/autoload.php')) { require_once 'vendor/autoload.php'; echo 'OneID package installed successfully!'; }\""
+    ]
+  },
+  "funding": [
+    {
+      "type": "github",
+      "url": "https://github.com/sponsors/aslnbxrz"
+    }
+  ]
+}

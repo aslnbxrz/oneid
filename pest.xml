@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
+         bootstrap="vendor/autoload.php"
+         colors="true"
+>
+    <testsuites>
+        <testsuite name="Unit">
+            <directory>./tests/Unit</directory>
+        </testsuite>
+        <testsuite name="Feature">
+            <directory>./tests/Feature</directory>
+        </testsuite>
+    </testsuites>
+    <source>
+        <include>
+            <directory>./src</directory>
+        </include>
+    </source>
+    <php>
+        <env name="APP_ENV" value="testing"/>
+        <env name="APP_KEY" value="base64:6C4Hl1d8X1qJ9Q1Z1Q1Q1Q1Q1Q1Q1Q1Q1Q1Q1Q1Q1Q="/>
+        <env name="DB_CONNECTION" value="sqlite"/>
+        <env name="DB_DATABASE" value=":memory:"/>
+        <env name="CACHE_DRIVER" value="array"/>
+        <env name="SESSION_DRIVER" value="array"/>
+        <env name="QUEUE_CONNECTION" value="sync"/>
+        <env name="MAIL_MAILER" value="array"/>
+        <env name="ONEID_BASE_URL" value="https://sso.egov.uz"/>
+        <env name="ONEID_CLIENT_ID" value="test_client_id"/>
+        <env name="ONEID_CLIENT_SECRET" value="test_client_secret"/>
+        <env name="ONEID_REDIRECT_URI" value="https://example.com/callback"/>
+        <env name="ONEID_SCOPE" value="openid profile"/>
+    </php>
+</phpunit>
