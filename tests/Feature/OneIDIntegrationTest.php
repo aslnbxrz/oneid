@@ -15,10 +15,11 @@ class OneIDIntegrationTest extends TestCase
             OneIdServiceProvider::class,
         ];
     }
+
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         // Set up test configuration
         config([
             'oneid.base_url' => 'https://sso.egov.uz',
@@ -32,14 +33,14 @@ class OneIDIntegrationTest extends TestCase
     public function test_it_can_validate_configuration()
     {
         $errors = OneIDValidator::validateConfiguration();
-        
+
         $this->assertEmpty($errors, 'Configuration should be valid for testing');
     }
 
     public function test_it_can_generate_authorization_url()
     {
         $url = OneID::getAuthorizationUrl();
-        
+
         $this->assertStringContainsString('https://sso.egov.uz', $url);
         $this->assertStringContainsString('response_type=one_code', $url);
         $this->assertStringContainsString('client_id=test_client_id', $url);
@@ -53,9 +54,9 @@ class OneIDIntegrationTest extends TestCase
     public function test_it_can_get_configuration_errors()
     {
         config(['oneid.client_id' => null]);
-        
+
         $errors = OneID::getConfigurationErrors();
-        
+
         $this->assertNotEmpty($errors);
         $this->assertContains('OneID Client ID is required but not configured', $errors);
     }
@@ -64,7 +65,7 @@ class OneIDIntegrationTest extends TestCase
     {
         $baseUrl = OneID::getConfig('base_url');
         $this->assertEquals('https://sso.egov.uz', $baseUrl);
-        
+
         $fullConfig = OneID::getConfig();
         $this->assertIsArray($fullConfig);
         $this->assertArrayHasKey('base_url', $fullConfig);
@@ -79,7 +80,7 @@ class OneIDIntegrationTest extends TestCase
     public function test_it_can_get_route_names()
     {
         $routeNames = OneID::getRouteNames();
-        
+
         $this->assertIsArray($routeNames);
         $this->assertArrayHasKey('handle', $routeNames);
         $this->assertArrayHasKey('logout', $routeNames);

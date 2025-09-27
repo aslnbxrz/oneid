@@ -7,7 +7,7 @@ use Saloon\Http\Request;
 
 class OneIDHandleRequest extends Request
 {
-    public function __construct(public string $accessToken){}
+    public function __construct(public string $accessToken) {}
 
     /**
      * The HTTP method of the request
@@ -25,12 +25,12 @@ class OneIDHandleRequest extends Request
     protected function defaultQuery(): array
     {
         return [
-            'grant_type'    => 'one_access_token_identify',
-            'client_id'     => config('oneid.client_id'),
+            'grant_type' => 'one_access_token_identify',
+            'client_id' => config('oneid.client_id'),
             'client_secret' => config('oneid.client_secret'),
-            'scope'         => config('oneid.scope'),
-            'redirect_uri'  => config('oneid.redirect_uri'),
-            'access_token'  => $this->accessToken,
+            'scope' => config('oneid.scope'),
+            'redirect_uri' => config('oneid.redirect_uri'),
+            'access_token' => $this->accessToken,
         ];
     }
 }

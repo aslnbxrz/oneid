@@ -1,56 +1,67 @@
-.PHONY: help install test test-coverage lint format analyse clean
+.PHONY: help install update qa lint format analyse test test-coverage test-unit test-feature clean hooks release bump-patch bump-minor bump-major ci
+
+# Binaries (override locally if needed, e.g., make test PHP=/path/to/php)
+PHP       ?= php
+COMPOSER  ?= composer
+BIN       := vendor/bin
 
 help: ## Show this help message
 	@echo 'Usage: make [target]'
 	@echo ''
 	@echo 'Targets:'
-	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "  %-15s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
+	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z0-9_-]+:.*?## / {printf "  %-18s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 
-install: ## Install dependencies
-	composer install
+install: ## Install dependencies (library repos often skip lock)
+	$(COMPOSER) install --prefer-dist --no-progress
+
+update: ## Update dependencies with all deps resolution
+	$(COMPOSER) update -W --prefer-dist --no-progress
+
+qa: lint test ## Run lint + tests (quick quality gate)
+
+lint: ## Run code style checks (non-destructive)
+	$(COMPOSER) lint:test
+
+format: ## Format code (destructive)
+	$(COMPOSER) format
+
+analyse: ## Run static analysis (if configured)
+	$(COMPOSER) analyse || true
 
 test: ## Run tests
-	composer test
+	$(COMPOSER) test
 
-test-coverage: ## Run tests with coverage
-	composer test:coverage
+test-coverage: ## Run tests with coverage (if configured)
+	$(COMPOSER) test:coverage
 
 test-unit: ## Run unit tests only
-	composer test:unit
+	$(COMPOSER) test:unit
 
 test-feature: ## Run feature tests only
-	composer test:feature
+	$(COMPOSER) test:feature
 
-lint: ## Run code style checks
-	composer lint
+clean: ## Clean vendor and lock
+	rm -rf vendor/ composer.lock
 
-lint-test: ## Test code style without fixing
-	composer lint:test
+hooks: ## Install git hooks (pre-push runs lint+tests)
+	chmod +x scripts/git-hooks/pre-push
+	git config core.hooksPath scripts/git-hooks
+	@echo "Git hooks installed."
 
-format: ## Format code
-	composer format
+ci: ## Run CI-equivalent locally (update deps + lint + tests)
+	$(COMPOSER) update -W --prefer-dist --no-progress
+	$(COMPOSER) lint:test
+	$(COMPOSER) test
 
-analyse: ## Run static analysis
-	composer analyse
+# Release helpers (all of them run qa gate inside the script)
+bump-patch: ## Bump patch (auto-fix workspace)
+	./scripts/bump-version.sh patch --auto-fix
 
-clean: ## Clean up generated files
-	rm -rf vendor/
-	rm -rf composer.lock
+bump-minor: ## Bump minor (auto-fix workspace)
+	./scripts/bump-version.sh minor --auto-fix
 
-bump-patch: ## Bump patch version
-	./scripts/bump-version.sh patch
+bump-major: ## Bump major (auto-fix workspace)
+	./scripts/bump-version.sh major --auto-fix
 
-bump-minor: ## Bump minor version
-	./scripts/bump-version.sh minor
-
-bump-major: ## Bump major version
-	./scripts/bump-version.sh major
-
-release: ## Run tests and bump patch version
-	composer test && make bump-patch
-
-setup: install ## Setup development environment
-	@echo "Development environment setup complete!"
-	@echo "Run 'make test' to verify everything is working."
-
-ci: lint test ## Run CI pipeline (lint + test)
+release: ## Quick patch release with auto-fix
+	./scripts/bump-version.sh patch --auto-fix

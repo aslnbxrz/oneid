@@ -7,7 +7,7 @@ use Saloon\Http\Request;
 
 class OneIDLogoutRequest extends Request
 {
-    public function __construct(public string $accessToken){}
+    public function __construct(public string $accessToken) {}
 
     /**
      * The HTTP method of the request
@@ -25,11 +25,11 @@ class OneIDLogoutRequest extends Request
     protected function defaultQuery(): array
     {
         return [
-            'grant_type'    => 'one_log_out',
-            'client_id'     => config('oneid.client_id'),
+            'grant_type' => 'one_log_out',
+            'client_id' => config('oneid.client_id'),
             'client_secret' => config('oneid.client_secret'),
-            'scope'         => config('oneid.scope'),
-            'access_token'  => $this->accessToken,
+            'scope' => config('oneid.scope'),
+            'access_token' => $this->accessToken,
         ];
     }
 }

@@ -3,7 +3,7 @@
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/aslnbxrz/oneid.svg?style=flat-square)](https://packagist.org/packages/aslnbxrz/oneid)
 [![Total Downloads](https://img.shields.io/packagist/dt/aslnbxrz/oneid.svg?style=flat-square)](https://packagist.org/packages/aslnbxrz/oneid)
 [![GitHub Tests Action Status](https://img.shields.io/github/actions/workflow/status/aslnbxrz/oneid/tests.yml?branch=main&label=tests&style=flat-square)](https://github.com/aslnbxrz/oneid/actions)
-[![License](https://img.shields.io/packagist/l/aslnbxrz/oneid.svg?style=flat-square)](https://packagist.org/packages/aslnbxrz/oneid)
+[![License](https://img.shields.io/packagist/l/aslnbxrz/oneid.svg?style=flat-square)](LICENSE)
 
 Professional Laravel package for integrating with **OneID** - Uzbekistan's unified identification system (Yagona identifikatsiya tizimi). This package provides a clean, secure, and easy-to-use interface for OneID authentication in Laravel applications.
 

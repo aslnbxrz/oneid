@@ -93,9 +93,9 @@ return [
         'pin_field' => env('ONEID_PIN_FIELD', 'pin'),
         'required_fields' => ['pin', 'first_name', 'sur_name', 'mid_name'],
         'optional_fields' => [
-            'valid', 'validation_method', 'user_id', 'full_name', 'pport_no', 
-            'birth_date', 'sur_name', 'user_type', 'sess_id', 'ret_cd', 
-            'auth_method', 'pkcs_legal_tin', 'legal_info'
+            'valid', 'validation_method', 'user_id', 'full_name', 'pport_no',
+            'birth_date', 'sur_name', 'user_type', 'sess_id', 'ret_cd',
+            'auth_method', 'pkcs_legal_tin', 'legal_info',
         ],
         // Rasmiy hujjatdagi field mapping
         'field_mapping' => [

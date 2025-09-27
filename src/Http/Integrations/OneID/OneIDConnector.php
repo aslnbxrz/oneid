@@ -2,7 +2,6 @@
 
 namespace Aslnbxrz\OneId\Http\Integrations\OneID;
 
-use Illuminate\Support\Facades\Config;
 use Saloon\Http\Connector;
 use Saloon\Traits\Plugins\AcceptsJson;
 

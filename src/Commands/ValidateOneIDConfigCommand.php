@@ -30,7 +30,7 @@ class ValidateOneIDConfigCommand extends Command
         if (empty($errors)) {
             $this->info('✅ OneID configuration is valid!');
             $this->newLine();
-            
+
             $this->table(['Configuration', 'Value'], [
                 ['Base URL', config('oneid.base_url')],
                 ['Client ID', config('oneid.client_id')],
@@ -40,7 +40,7 @@ class ValidateOneIDConfigCommand extends Command
                 ['Routes Enabled', config('oneid.routes.enabled') ? 'Yes' : 'No'],
                 ['Logging Enabled', config('oneid.logging.enabled') ? 'Yes' : 'No'],
             ]);
-            
+
             return self::SUCCESS;
         }
 

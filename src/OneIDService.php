@@ -2,12 +2,12 @@
 
 namespace Aslnbxrz\OneId;
 
+use Aslnbxrz\OneId\Data\OneIDAuthResult;
+use Aslnbxrz\OneId\Data\OneIDLogoutResult;
 use Aslnbxrz\OneId\Http\Integrations\OneID\OneIDConnector;
 use Aslnbxrz\OneId\Http\Integrations\OneID\Requests\OneIDGetTokenRequest;
 use Aslnbxrz\OneId\Http\Integrations\OneID\Requests\OneIDHandleRequest;
 use Aslnbxrz\OneId\Http\Integrations\OneID\Requests\OneIDLogoutRequest;
-use Aslnbxrz\OneId\Data\OneIDAuthResult;
-use Aslnbxrz\OneId\Data\OneIDLogoutResult;
 use Illuminate\Support\Facades\Log;
 use JsonException;
 use Saloon\Exceptions\Request\FatalRequestException;
@@ -80,18 +80,20 @@ final readonly class OneIDService
     /**
      * Exchange OneID authorization code for access token.
      *
-     * @param string $code The authorization code from OneID callback
-     * @return string|null         Access token, or null on failure (already logged)
+     * @param  string  $code  The authorization code from OneID callback
+     * @return string|null Access token, or null on failure (already logged)
      */
     private static function oneIdGetToken(string $code): ?string
     {
         try {
             $response = self::send(new OneIDGetTokenRequest($code));
+
             return $response->json('access_token');
 
         } catch (FatalRequestException $e) {
             // Network/transport issue: DNS, SSL, timeout, base URL error, etc.
             self::log('OneID: Fatal transport error while requesting token', $code, $e->getMessage());
+
             return null;
 
         } catch (RequestException $e) {
@@ -101,15 +103,16 @@ final readonly class OneIDService
                 'status' => $resp?->status(),
                 'body' => $resp?->body(),
             ]);
+
             return null;
 
         } catch (JsonException $e) {
             // Malformed or unexpected JSON response
             self::log('OneID: Failed to parse token response', $code, $e->getMessage());
+
             return null;
         }
     }
-
 
     /**
      * Internal handler: code -> token -> handle/profile call.
@@ -140,7 +143,7 @@ final readonly class OneIDService
             // Customize validation: require 'pin' key in payload
             $hasIdentifier = is_array($json) && array_key_exists($key, $json);
 
-            if (!$hasIdentifier) {
+            if (! $hasIdentifier) {
                 self::log("OneID: Handle payload missing '$key'", $code, $response->body());
 
                 return [
@@ -239,7 +242,7 @@ final readonly class OneIDService
             'state' => csrf_token(), // Add CSRF protection
         ]);
 
-        return $baseUrl . $endpoint . '?' . $params;
+        return $baseUrl.$endpoint.'?'.$params;
     }
 
     /**
@@ -249,12 +252,12 @@ final readonly class OneIDService
     {
         try {
             $response = self::send(new OneIDHandleRequest($accessToken));
+
             return $response->json();
 
         } catch (FatalRequestException $e) {
             self::log('OneID: Get user info transport error', 'N/A', $e->getMessage());
             throw $e;
-
         } catch (RequestException $e) {
             $resp = $e->getResponse();
             self::log('OneID: Get user info request rejected', 'N/A', [
@@ -273,11 +276,12 @@ final readonly class OneIDService
         try {
             $userInfo = self::getUserInfo($accessToken);
             $pinField = config('oneid.user.pin_field', 'pin');
-            
+
             return is_array($userInfo) && array_key_exists($pinField, $userInfo);
 
         } catch (\Exception $e) {
             self::log('OneID: Token validation failed', 'N/A', $e->getMessage());
+
             return false;
         }
     }
@@ -296,7 +300,7 @@ final readonly class OneIDService
     public static function isConfigured(): bool
     {
         $required = ['client_id', 'client_secret', 'redirect_uri', 'base_url'];
-        
+
         foreach ($required as $key) {
             if (empty(config("oneid.{$key}"))) {
                 return false;
@@ -314,7 +318,7 @@ final readonly class OneIDService
         $errors = [];
         $required = [
             'client_id' => 'OneID Client ID',
-            'client_secret' => 'OneID Client Secret', 
+            'client_secret' => 'OneID Client Secret',
             'redirect_uri' => 'OneID Redirect URI',
             'base_url' => 'OneID Base URL',
         ];
@@ -333,7 +337,7 @@ final readonly class OneIDService
      */
     private static function log(string $message, string $code, mixed $error): void
     {
-        if (!config('oneid.logging.enabled', true)) {
+        if (! config('oneid.logging.enabled', true)) {
             return;
         }
 

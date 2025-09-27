@@ -3,14 +3,17 @@
 namespace Aslnbxrz\OneId\Data;
 
 use Spatie\LaravelData\Data;
-use Spatie\LaravelData\Attributes\DataCollectionOf;
 
 class OneIDAuthResult extends Data
 {
     public bool $success;
+
     public string $message;
+
     public ?int $status = null;
+
     public ?array $data = null;
+
     public ?string $error = null;
 
     /**
@@ -18,7 +21,7 @@ class OneIDAuthResult extends Data
      */
     public function getUserData(): ?OneIDUserData
     {
-        if (!$this->success || !$this->data) {
+        if (! $this->success || ! $this->data) {
             return null;
         }
 
@@ -50,7 +53,7 @@ class OneIDAuthResult extends Data
      */
     public function isValidUser(): bool
     {
-        if (!$this->success || !$this->data) {
+        if (! $this->success || ! $this->data) {
             return false;
         }
 

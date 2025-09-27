@@ -15,10 +15,11 @@ class OneIDServiceTest extends TestCase
             OneIdServiceProvider::class,
         ];
     }
+
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         // Set up test configuration
         config([
             'oneid.base_url' => 'https://sso.egov.uz',
@@ -37,7 +38,7 @@ class OneIDServiceTest extends TestCase
     public function test_it_returns_false_when_missing_required_config()
     {
         config(['oneid.client_id' => null]);
-        
+
         $this->assertFalse(OneIDService::isConfigured());
     }
 
@@ -47,9 +48,9 @@ class OneIDServiceTest extends TestCase
             'oneid.client_id' => null,
             'oneid.client_secret' => null,
         ]);
-        
+
         $errors = OneIDService::getConfigurationErrors();
-        
+
         $this->assertCount(2, $errors);
         $this->assertContains('OneID Client ID is required but not configured', $errors);
         $this->assertContains('OneID Client Secret is required but not configured', $errors);
@@ -58,19 +59,19 @@ class OneIDServiceTest extends TestCase
     public function test_it_can_generate_authorization_url()
     {
         $url = OneIDService::getAuthorizationUrl();
-        
+
         $this->assertStringContainsString('https://sso.egov.uz', $url);
         $this->assertStringContainsString('response_type=one_code', $url);
         $this->assertStringContainsString('client_id=test_client_id', $url);
-        $this->assertStringContainsString('redirect_uri=' . urlencode('https://example.com/callback'), $url);
-        $this->assertStringContainsString('scope=' . urlencode('openid profile'), $url);
+        $this->assertStringContainsString('redirect_uri='.urlencode('https://example.com/callback'), $url);
+        $this->assertStringContainsString('scope='.urlencode('openid profile'), $url);
     }
 
     public function test_it_can_validate_authorization_code()
     {
         $validCode = 'valid_authorization_code_123';
         $errors = OneIDValidator::validateAuthorizationCode($validCode);
-        
+
         $this->assertEmpty($errors);
     }
 
@@ -78,7 +79,7 @@ class OneIDServiceTest extends TestCase
     {
         $invalidCode = 'short';
         $errors = OneIDValidator::validateAuthorizationCode($invalidCode);
-        
+
         $this->assertNotEmpty($errors);
         $this->assertStringContainsString('must be at least', $errors[0]);
     }
@@ -87,7 +88,7 @@ class OneIDServiceTest extends TestCase
     {
         $validToken = 'valid_access_token_123456789';
         $errors = OneIDValidator::validateAccessToken($validToken);
-        
+
         $this->assertEmpty($errors);
     }
 
@@ -95,7 +96,7 @@ class OneIDServiceTest extends TestCase
     {
         $invalidToken = 'short';
         $errors = OneIDValidator::validateAccessToken($invalidToken);
-        
+
         $this->assertNotEmpty($errors);
         $this->assertStringContainsString('must be at least', $errors[0]);
     }
@@ -110,9 +111,9 @@ class OneIDServiceTest extends TestCase
             'user_type' => 'I',
             'ret_cd' => '0',
         ];
-        
+
         $errors = OneIDValidator::validateUserData($userData);
-        
+
         $this->assertEmpty($errors);
     }
 
@@ -123,9 +124,9 @@ class OneIDServiceTest extends TestCase
             'first_name' => 'John',
             'last_name' => 'Doe',
         ];
-        
+
         $errors = OneIDValidator::validateUserData($userData);
-        
+
         $this->assertNotEmpty($errors);
         $this->assertContains('PIN must be exactly 14 digits', $errors);
     }
@@ -136,9 +137,9 @@ class OneIDServiceTest extends TestCase
             'pin' => '12345678901234',
             // Missing first_name and last_name
         ];
-        
+
         $errors = OneIDValidator::validateUserData($userData);
-        
+
         $this->assertNotEmpty($errors);
         $this->assertContains("Required field 'first_name' is missing or empty", $errors);
         $this->assertContains("Required field 'sur_name' is missing or empty", $errors);

@@ -7,7 +7,7 @@ use Aslnbxrz\OneId\Data\OneIDLogoutResult;
 
 /**
  * OneID Manager - Main interface for OneID operations
- * 
+ *
  * This class provides a clean interface for all OneID operations
  * and serves as the accessor for the OneID facade.
  */

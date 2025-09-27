@@ -2,7 +2,6 @@
 
 namespace Aslnbxrz\OneId\Tests\Unit;
 
-use Aslnbxrz\OneId\Data\OneIDUserData;
 use Aslnbxrz\OneId\OneIdServiceProvider;
 use Orchestra\Testbench\TestCase;
 
@@ -59,7 +58,7 @@ class OneIDUserDataTest extends TestCase
         ];
 
         // Oddiy array sifatida test qilamiz
-        $isVerified = $userData['valid'] === true && !empty($userData['validation_method']);
+        $isVerified = $userData['valid'] === true && ! empty($userData['validation_method']);
         $this->assertTrue($isVerified);
     }
 
@@ -71,7 +70,7 @@ class OneIDUserDataTest extends TestCase
         ];
 
         // Auth method nomini tekshiramiz
-        $authMethodName = match($userData['auth_method']) {
+        $authMethodName = match ($userData['auth_method']) {
             'PKCSMETHOD' => 'Elektron raqamli imzo (ERI)',
             'MOBILEMETHOD' => 'Mobile-ID',
             'LOGINPASSMETHOD' => 'Login va Parol',

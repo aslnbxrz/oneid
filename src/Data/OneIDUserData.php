@@ -6,7 +6,7 @@ use Spatie\LaravelData\Data;
 
 /**
  * OneID User Data - Rasmiy hujjatga mos keluvchi foydalanuvchi ma'lumotlari
- * 
+ *
  * Bu class OneID rasmiy texnik hujjatidagi barcha user data fieldlarini o'z ichiga oladi
  */
 class OneIDUserData extends Data
@@ -15,19 +15,33 @@ class OneIDUserData extends Data
      * Jismoniy shaxs ma'lumotlari
      */
     public ?bool $valid = null;
+
     public ?array $validation_method = null;
+
     public ?string $pin = null;
+
     public ?string $user_id = null;
+
     public ?string $full_name = null;
+
     public ?string $pport_no = null;
+
     public ?string $birth_date = null;
+
     public ?string $sur_name = null;
+
     public ?string $first_name = null;
+
     public ?string $mid_name = null;
+
     public ?string $user_type = null;
+
     public ?string $sess_id = null;
+
     public ?string $ret_cd = null;
+
     public ?string $auth_method = null;
+
     public ?string $pkcs_legal_tin = null;
 
     /**
@@ -38,13 +52,13 @@ class OneIDUserData extends Data
     /**
      * Helper methodlar
      */
-    
+
     /**
      * Foydalanuvchi tasdiqlangan maqomda ekanligini tekshirish
      */
     public function isVerified(): bool
     {
-        return $this->valid === true && !empty($this->validation_method);
+        return $this->valid === true && ! empty($this->validation_method);
     }
 
     /**
@@ -100,8 +114,8 @@ class OneIDUserData extends Data
         }
 
         $name = $this->sur_name ?? '';
-        $name .= $this->first_name ? ' ' . $this->first_name : '';
-        $name .= $this->mid_name ? ' ' . $this->mid_name : '';
+        $name .= $this->first_name ? ' '.$this->first_name : '';
+        $name .= $this->mid_name ? ' '.$this->mid_name : '';
 
         return trim($name);
     }
@@ -111,7 +125,7 @@ class OneIDUserData extends Data
      */
     public function getBirthDate(): ?\DateTime
     {
-        if (!$this->birth_date) {
+        if (! $this->birth_date) {
             return null;
         }
 
@@ -120,7 +134,7 @@ class OneIDUserData extends Data
             if (strlen($this->birth_date) === 8) {
                 return \DateTime::createFromFormat('Ymd', $this->birth_date);
             }
-            
+
             // Alternative format: YYYY-MM-DD
             if (strlen($this->birth_date) === 10) {
                 return new \DateTime($this->birth_date);
@@ -145,7 +159,7 @@ class OneIDUserData extends Data
      */
     public function getAuthMethodName(): string
     {
-        return match($this->auth_method) {
+        return match ($this->auth_method) {
             'LOGINPASSMETHOD' => 'Login va Parol',
             'MOBILEMETHOD' => 'Mobile-ID',
             'PKCSMETHOD' => 'Elektron raqamli imzo (ERI)',
@@ -161,13 +175,13 @@ class OneIDUserData extends Data
     public function getValidationMethods(): array
     {
         $methods = [];
-        
+
         if (empty($this->validation_method)) {
             return $methods;
         }
 
         foreach ($this->validation_method as $method) {
-            $methods[] = match($method) {
+            $methods[] = match ($method) {
                 'PKCSMETHOD' => 'Elektron raqamli imzo (ERI)',
                 'MOBILEMETHOD' => 'Mobile-ID',
                 default => 'Noma\'lum usul'

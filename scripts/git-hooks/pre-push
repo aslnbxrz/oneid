@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+# Pre-push hook: block push if QA fails.
+# Comments are in English as requested.
+
+set -euo pipefail
+
+echo "[pre-push] Running QA (lint + tests)..."
+
+# Prefer composer update in CI; for local hook we keep it fast.
+if ! composer lint:test; then
+  echo "[pre-push] Lint failed. Fix with: composer format"
+  exit 1
+fi
+
+if ! composer test; then
+  echo "[pre-push] Tests failed. Please fix tests before pushing."
+  exit 1
+fi
+
+echo "[pre-push] OK ✅"
+exit 0

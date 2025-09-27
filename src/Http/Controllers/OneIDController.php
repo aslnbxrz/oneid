@@ -2,8 +2,6 @@
 
 namespace Aslnbxrz\OneId\Http\Controllers;
 
-use Aslnbxrz\OneId\Data\OneIDAuthResult;
-use Aslnbxrz\OneId\Data\OneIDLogoutResult;
 use Aslnbxrz\OneId\Facades\OneID;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
