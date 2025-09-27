@@ -4,16 +4,53 @@ on:
   push:
   pull_request:
 
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
+  lint:
+    name: Code Style (Pint)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP 8.3
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: none
+
+      - name: Get composer cache dir
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+
+      - name: Cache composer
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-php-8.3-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-php-8.3-composer-
+
+      - name: Install dev tools
+        run: composer install --no-interaction --prefer-dist --no-progress --ansi || true && composer update --no-interaction --prefer-dist --no-progress --ansi
+
+      - name: Run Pint
+        run: vendor/bin/pint --test
+
   tests:
+    name: tests (${{ matrix.php }})
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        php: [ 8.2, 8.3, 8.4 ]
+        php: [8.2, 8.3, 8.4]
 
     steps:
-      - name: Checkout code
+      - name: Checkout
         uses: actions/checkout@v4
 
       - name: Setup PHP
@@ -28,25 +65,37 @@ jobs:
         run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
 
       - name: Cache composer
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ${{ steps.composer-cache.outputs.dir }}
           key: ${{ runner.os }}-php-${{ matrix.php }}-composer-${{ hashFiles('**/composer.lock') }}
           restore-keys: |
             ${{ runner.os }}-php-${{ matrix.php }}-composer-
 
-      - name: Install dependencies
-        run: composer install --no-interaction --prefer-dist --no-progress --ansi
+      # Paket loyihalarda lock fayliga bog'lanib qolmaslik uchun:
+      - name: Prefer update for libraries
+        run: |
+          if [ -f composer.lock ]; then rm -f composer.lock; fi
+          composer config --unset platform.php || true
+
+      # Har bir PHP versiyasi uchun mos PHPUnit major versiyasini majburan belgilaymiz
+      - name: Adjust dev deps for ${{ matrix.php }}
+        run: |
+          if [ "${{ matrix.php }}" = "8.2" ]; then
+            composer require --no-update --dev phpunit/phpunit:"^11.3"
+          else
+            composer require --no-update --dev phpunit/phpunit:"^12.0"
+          fi
+
+      - name: Install dependencies (resolve for this PHP)
+        run: composer update --no-interaction --prefer-dist --no-progress --ansi
 
       - name: Validate composer.json
         run: composer validate --strict
 
-      - name: Run Pint (lint --test)
-        run: vendor/bin/pint --test
-
       - name: Run tests
         run: |
-          if [ -f ./vendor/bin/pest ]; then
+          if [ -x ./vendor/bin/pest ]; then
             ./vendor/bin/pest --ci --do-not-cache-result
           else
             ./vendor/bin/phpunit --do-not-cache-result
