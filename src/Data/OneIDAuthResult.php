@@ -10,6 +10,8 @@ class OneIDAuthResult extends Data
 
     public string $message;
 
+    public ?string $token = null;
+
     public ?int $status = null;
 
     public ?array $data = null;
@@ -17,7 +19,7 @@ class OneIDAuthResult extends Data
     public ?string $error = null;
 
     /**
-     * OneID user data'ni olish
+     * OneID user data
      */
     public function getUserData(): ?OneIDUserData
     {
@@ -33,7 +35,7 @@ class OneIDAuthResult extends Data
     }
 
     /**
-     * Foydalanuvchi PIN'ini olish
+     * get user pin
      */
     public function getPin(): ?string
     {
@@ -41,7 +43,7 @@ class OneIDAuthResult extends Data
     }
 
     /**
-     * Foydalanuvchi to'liq ismini olish
+     * get user full name
      */
     public function getFullName(): ?string
     {
@@ -49,7 +51,7 @@ class OneIDAuthResult extends Data
     }
 
     /**
-     * Foydalanuvchi ma'lumotlarini tekshirish
+     * check if user is valid
      */
     public function isValidUser(): bool
     {

@@ -26,6 +26,7 @@ final readonly class OneIDService
 
         // Always return a consistent DTO payload
         return OneIDAuthResult::from([
+            'token' => $payload['token'] ?? null,
             'success' => $payload['success'] ?? false,
             'message' => $payload['message'] ?? 'Failed to authorize with OneID',
             'status' => $payload['status'] ?? null,
@@ -156,6 +157,7 @@ final readonly class OneIDService
             }
 
             return [
+                'token' => $accessToken,
                 'success' => true,
                 'message' => 'Authorized successfully',
                 'status' => $response->status(),
@@ -167,6 +169,7 @@ final readonly class OneIDService
             self::log('OneID: Handle transport error', $code, $e->getMessage());
 
             return [
+                'token' => null,
                 'success' => false,
                 'message' => 'Transport error while calling OneID handle endpoint',
                 'status' => null,
@@ -184,6 +187,7 @@ final readonly class OneIDService
             ]);
 
             return [
+                'token' => null,
                 'success' => false,
                 'message' => 'OneID handle request failed',
                 'status' => $resp?->status(),
@@ -195,6 +199,7 @@ final readonly class OneIDService
             self::log('OneID: Failed to parse handle response', $code, $e->getMessage());
 
             return [
+                'token' => null,
                 'success' => false,
                 'message' => 'Failed to parse OneID handle response',
                 'status' => null,
