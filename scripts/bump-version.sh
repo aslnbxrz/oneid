@@ -1,93 +1,94 @@
-#!/usr/bin/env bash
+#!/bin/sh
 # Usage: ./scripts/bump-version.sh [patch|minor|major] [--auto-fix|--allow-dirty]
-set -euo pipefail
+# POSIX sh compatible; no bashisms.
 
-RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'; BLUE='\033[0;34m'; NC='\033[0m'
-info()    { echo -e "${BLUE}[INFO]${NC} $*"; }
-success() { echo -e "${GREEN}[SUCCESS]${NC} $*"; }
-warn()    { echo -e "${YELLOW}[WARN]${NC} $*"; }
-error()   { echo -e "${RED}[ERROR]${NC} $*"; }
+set -eu
+
+blue()  { printf "\033[0;34m[INFO]\033[0m %s\n" "$1"; }
+green() { printf "\033[0;32m[SUCCESS]\033[0m %s\n" "$1"; }
+yellow(){ printf "\033[1;33m[WARN]\033[0m %s\n" "$1"; }
+red()   { printf "\033[0;31m[ERROR]\033[0m %s\n" "$1"; }
 
 BUMP_TYPE="${1:-patch}"
 FLAG="${2:-}"
-if [[ ! "$BUMP_TYPE" =~ ^(patch|minor|major)$ ]]; then
-  error "Invalid bump type. Use: patch|minor|major"
-  exit 1
-fi
+
+case "$BUMP_TYPE" in
+  patch|minor|major) ;;
+  *) red "Use: patch|minor|major"; exit 1;;
+esac
 
 AUTO_FIX=false
 ALLOW_DIRTY=false
-[[ "$FLAG" == "--auto-fix" ]] && AUTO_FIX=true
-[[ "$FLAG" == "--allow-dirty" ]] && ALLOW_DIRTY=true
+[ "$FLAG" = "--auto-fix" ] && AUTO_FIX=true
+[ "$FLAG" = "--allow-dirty" ] && ALLOW_DIRTY=true
 
 CURRENT_BRANCH="$(git rev-parse --abbrev-ref HEAD)"
-if [[ "$CURRENT_BRANCH" != "main" && "$CURRENT_BRANCH" != "master" ]]; then
-  warn "Releasing from branch '$CURRENT_BRANCH'. Usually main/master."
+if [ "$CURRENT_BRANCH" != "main" ] && [ "$CURRENT_BRANCH" != "master" ]; then
+  yellow "Releasing from '$CURRENT_BRANCH' (usually main/master)"
 fi
 
-is_dirty() { [[ -n "$(git status --porcelain)" ]]; }
+is_dirty() {
+  [ -n "$(git status --porcelain)" ]
+}
 
 if is_dirty; then
-  if $AUTO_FIX; then
-    info "Workspace dirty → running Pint format..."
-    composer format || true
+  if [ "$AUTO_FIX" = true ]; then
+    blue "Workspace dirty → running vendor/bin/pint..."
+    if [ -x "./vendor/bin/pint" ]; then
+      ./vendor/bin/pint || true
+    else
+      composer install --prefer-dist --no-progress
+      ./vendor/bin/pint || true
+    fi
     git add -A || true
     if is_dirty; then
-      warn "Non-format changes detected → committing them too."
+      yellow "Non-format changes present → committing..."
       git commit -m "chore: pre-release: auto-fix & tidy" || true
     else
       git commit -m "style: pint format" || true
     fi
-  elif ! $ALLOW_DIRTY; then
-    error "Working tree not clean. Use --auto-fix or commit/stash manually."
+  elif [ "$ALLOW_DIRTY" != true ]; then
+    red "Working tree not clean. Use --auto-fix or commit/stash."
     exit 1
   fi
 fi
 
-info "Pulling latest with tags..."
+blue "Pulling latest with tags..."
 git pull --rebase --tags
 
-info "QA gate (lint + tests)..."
+blue "QA gate (validate + lint + tests)..."
+composer validate --strict
 composer update -W --prefer-dist --no-progress
-composer lint:test
-composer test
+./vendor/bin/pint --test
+./vendor/bin/pest
 
-HAS_VERSION_KEY="$(grep -E '^\s*\"version\"\s*:\s*\"' composer.json || true)"
-if [[ -n "$HAS_VERSION_KEY" ]]; then
-  CURRENT_VERSION="$(php -r '$c=json_decode(file_get_contents("composer.json"),true); echo $c["version"]??"";')"
-  [[ -z "$CURRENT_VERSION" ]] && { error "composer.json version key empty."; exit 1; }
-else
-  CURRENT_VERSION="$(git tag --list 'v*' --sort=-v:refname | head -n1 | sed 's/^v//')"
-  [[ -z "$CURRENT_VERSION" ]] && CURRENT_VERSION="0.1.0" && warn "No tags found. Starting from $CURRENT_VERSION"
+# Version from latest git tag (vX.Y.Z). If none, start 0.1.0
+CURRENT_VERSION="$(git tag --list 'v*' --sort=-v:refname | head -n1 | sed 's/^v//')"
+if [ -z "${CURRENT_VERSION}" ]; then
+  CURRENT_VERSION="0.1.0"
+  yellow "No tags found. Starting from ${CURRENT_VERSION}"
 fi
 
-info "Current version: $CURRENT_VERSION"
-IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT_VERSION"
+blue "Current version: ${CURRENT_VERSION}"
+
+MAJOR=$(printf "%s" "$CURRENT_VERSION" | cut -d. -f1)
+MINOR=$(printf "%s" "$CURRENT_VERSION" | cut -d. -f2)
+PATCH=$(printf "%s" "$CURRENT_VERSION" | cut -d. -f3)
+
 case "$BUMP_TYPE" in
-  patch) PATCH=$((PATCH+1));;
-  minor) MINOR=$((MINOR+1)); PATCH=0;;
-  major) MAJOR=$((MAJOR+1)); MINOR=0; PATCH=0;;
+  patch) PATCH=$((PATCH + 1));;
+  minor) MINOR=$((MINOR + 1)); PATCH=0;;
+  major) MAJOR=$((MAJOR + 1)); MINOR=0; PATCH=0;;
 esac
-NEW_VERSION="${MAJOR}.${MINOR}.${PATCH}"
-info "New version: $NEW_VERSION"
 
-if [[ -n "$HAS_VERSION_KEY" ]]; then
-  info "Updating composer.json version..."
-  php -r '
-    $f="composer.json";
-    $c=json_decode(file_get_contents($f),true);
-    $c["version"]=getenv("NEWV");
-    file_put_contents($f,json_encode($c,JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES).PHP_EOL);
-  ' NEWV="$NEW_VERSION"
-  git add composer.json
-  git commit -m "v${NEW_VERSION}: Version bump (${BUMP_TYPE})" || true
-fi
+NEW_VERSION="${MAJOR}.${MINOR}.${PATCH}"
+blue "New version: ${NEW_VERSION}"
 
 TAG="v${NEW_VERSION}"
-info "Creating tag ${TAG}..."
+blue "Creating tag ${TAG}..."
 git tag -a "${TAG}" -m "Release ${TAG}"
 
-info "Pushing branch & tags..."
+blue "Pushing branch & tags..."
 git push origin "${CURRENT_BRANCH}" --tags
 
-success "Released ${TAG} 🎉"
+green "Released ${TAG} 🎉"

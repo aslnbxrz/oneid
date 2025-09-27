@@ -3,7 +3,6 @@
     "description": "Professional OneID integration package for Laravel - Uzbekistan's unified identification system",
     "type": "library",
     "license": "MIT",
-    "version": false,
     "keywords": [
         "laravel",
         "oneid",

@@ -1,20 +1,36 @@
-#!/usr/bin/env bash
-# Pre-push hook: block push if QA fails.
-# Comments are in English as requested.
+#!/bin/sh
+# Pre-push: auto-fix with Pint, then validate, lint, tests.
 
-set -euo pipefail
+set -eu
 
-echo "[pre-push] Running QA (lint + tests)..."
-
-# Prefer composer update in CI; for local hook we keep it fast.
-if ! composer lint:test; then
-  echo "[pre-push] Lint failed. Fix with: composer format"
-  exit 1
+echo "[pre-push] Auto-fix (vendor/bin/pint)..."
+if [ -x "./vendor/bin/pint" ]; then
+  ./vendor/bin/pint || true
+else
+  echo "[pre-push] Pint not found. Installing dev deps..."
+  composer install --prefer-dist --no-progress
+  ./vendor/bin/pint || true
 fi
 
-if ! composer test; then
-  echo "[pre-push] Tests failed. Please fix tests before pushing."
-  exit 1
+# Auto-commit formatting if changed
+if [ -n "$(git status --porcelain)" ]; then
+  echo "[pre-push] Detected formatting changes, committing..."
+  git add -A
+  git commit -m "style: pint auto-format (pre-push)" || true
+fi
+
+echo "[pre-push] composer validate --strict..."
+composer validate --strict
+
+echo "[pre-push] Lint (pint --test)..."
+./vendor/bin/pint --test
+
+echo "[pre-push] Tests (pest)..."
+if [ -x "./vendor/bin/pest" ]; then
+  ./vendor/bin/pest
+else
+  composer install --prefer-dist --no-progress
+  ./vendor/bin/pest
 fi
 
 echo "[pre-push] OK ✅"
