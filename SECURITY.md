@@ -4,13 +4,15 @@
 
 We release patches for security vulnerabilities in the following versions:
 
-| Version | Supported          |
-| ------- | ------------------ |
-| 1.0.x   | :white_check_mark: |
+| Version | Supported |
+|---------|-----------|
+| 1.0.x   | ✅         |
 
 ## Reporting a Vulnerability
 
-If you discover a security vulnerability within this package, please send an email to [bexruz.aslonov1@gmail.com](mailto:bexruz.aslonov1@gmail.com). All security vulnerabilities will be promptly addressed.
+If you discover a security vulnerability within this package, please send an email
+to [bexruz.aslonov1@gmail.com](mailto:bexruz.aslonov1@gmail.com). All security vulnerabilities will be promptly
+addressed.
 
 Please do not create public GitHub issues for security vulnerabilities.
 

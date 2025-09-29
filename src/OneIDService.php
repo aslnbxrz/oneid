@@ -240,7 +240,7 @@ final readonly class OneIDService
         $scope = config('oneid.scope', 'openid profile');
 
         $params = http_build_query([
-            'response_type' => 'one_code', // Rasmiy hujjatga ko'ra 'one_code' bo'lishi kerak
+            'response_type' => 'one_code', // 'one_code' (according to OneID docs)
             'client_id' => $clientId,
             'redirect_uri' => $redirectUri,
             'scope' => $scope,
